@@ -1,0 +1,64 @@
+# ======================
+# Visual Studio / MSVC
+# ======================
+.vs/
+*.vcxproj.user
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.VC.opendb
+*.ipch
+*.aps
+*.pch
+*.idb
+*.pdb
+
+# ======================
+# Build Folders
+# ======================
+Debug/
+Release/
+x64/ 
+x86/
+build/
+bin/
+obj/
+
+# ======================
+# CMake
+# ======================
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+CTestTestfile.cmake
+Testing/
+
+# ======================
+# Temporary / OS Files
+# ======================
+*.log
+*.tmp
+*.swp
+*.DS_Store
+Thumbs.db
+
+# ======================
+# Executables / Output
+# ======================
+*.exe
+*.dll
+*.lib
+*.so
+*.dylib
+*.out
+
+# ======================
+# Others
+# ======================
+*.user
+*.sln.docstates
+*.opensdf
