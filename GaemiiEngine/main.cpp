@@ -1,6 +1,10 @@
-﻿#include <windows.h>
+﻿#define _CRTDBG_MAP_ALLOC
+
+#include <windows.h>
 #include "tchar.h"
 #include "DX11.h"
+#include "Shader.h"
+#include "Engine.h"
 
 #pragma region 윈도우 관련 전역변수
 HWND g_hWnd = nullptr;
@@ -41,10 +45,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
     if (!InitWindow(g_WindowDefaultSize.width, g_WindowDefaultSize.height))
     {
         return 0;
     }
+
+    if (!DXSetup(g_hWnd))
+        return 0;
+
+    ShaderCreate(L"../fx/Demo.fx");
+
+    Init();
+    
 
     while (true)
     {
@@ -53,7 +67,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
             break;
         }
 
+        Render();
+        //Draw();
     }
+
+    DXRelease();
 
     return 0;
 }
