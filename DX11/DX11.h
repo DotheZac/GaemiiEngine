@@ -8,6 +8,7 @@
 #include <d3d11.h>
 #include <tchar.h>
 #include <wrl/client.h>
+#include <memory>
 #include "DirectXMath.h"
 
 using Microsoft::WRL::ComPtr;
