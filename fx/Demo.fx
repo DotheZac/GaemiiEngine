@@ -38,8 +38,7 @@ struct VSOutput
 ////////////////////////////////////////////////////////////////////////////// 
 
 VSOutput VS_Main(
-				  float4 pos : POSITION,    //[입력] 정점좌표. Vertex Position (Model Space, 3D)
-				  float4 col : COLOR0       //[입력] 정점색 Vertex Color : "Diffuse"
+				  float4 pos : POSITION    //[입력] 정점좌표. Vertex Position (Model Space, 3D)
 				)
 {
 	//정점 정리
@@ -58,7 +57,7 @@ VSOutput VS_Main(
     //정보 출력.
     VSOutput o = (VSOutput)0;
     o.pos = pos;
-    o.col = col;
+    o.col = float4(1, 0, 0, 1);
          
 	return o;
 }

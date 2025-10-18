@@ -14,7 +14,7 @@ struct WindowSize
     int width;
     int height;
 };
-WindowSize g_WindowDefaultSize{ 800, 600 };
+WindowSize g_WindowDefaultSize{ g_DisPlay.Width, g_DisPlay.Height };
 
 const TCHAR* g_ClassName = _T("Gaemii");
 const TCHAR* g_WindowName = _T("GaemiiEngine");
@@ -70,8 +70,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
         Render();
         //Draw();
     }
-
-    DXRelease();
 
     return 0;
 }

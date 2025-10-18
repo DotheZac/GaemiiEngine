@@ -35,7 +35,7 @@ HRESULT ShaderLoad(const TCHAR* fxname, const char* entry, const char* sm, ID3D1
 	hr = ShaderCompile(fxname, entry, sm, &pCode);
 	if (FAILED(hr))
 	{
-		//MessageBox(NULL, L"[실패] ShaderLoad :: Shader 컴파일 실패", L"Error", MB_OK | MB_ICONERROR);
+		ERROR_MSG(hr);
 		return hr;
 	}
 
@@ -43,6 +43,7 @@ HRESULT ShaderLoad(const TCHAR* fxname, const char* entry, const char* sm, ID3D1
 	hr = g_pDevice->CreateVertexShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pVS);
 	if (FAILED(hr))
 	{
+		ERROR_MSG(hr);
 		return hr;
 	}
 
@@ -61,7 +62,7 @@ HRESULT ShaderLoad(const TCHAR* fxname, const char* entry, const char* sm, ID3D1
 	hr = ShaderCompile(fxname, entry, sm, &pCode);
 	if (FAILED(hr))
 	{
-		//MessageBox(NULL, L"[실패] ShaderLoad :: 셰이더 컴파일 실패", L"Error", MB_OK | MB_ICONERROR);
+		ERROR_MSG(hr);
 		return hr;
 	}
 
@@ -69,10 +70,15 @@ HRESULT ShaderLoad(const TCHAR* fxname, const char* entry, const char* sm, ID3D1
 	hr = g_pDevice->CreatePixelShader(pCode->GetBufferPointer(), pCode->GetBufferSize(), nullptr, &pPS);
 	if (FAILED(hr))
 	{
+		ERROR_MSG(hr);
 		return hr;
 	}
 
-	if (FAILED(hr))	return hr;
+	if (FAILED(hr))	
+	{
+		ERROR_MSG(hr);
+		return hr;
+	}
 
 	*ppPS = pPS;
 
@@ -98,6 +104,8 @@ HRESULT ShaderCompile(const TCHAR* FileName, const char* EntryPoint, const char*
 	);
 	if (FAILED(hr))
 	{
+		ERROR_MSG(hr);
+		return hr;
 	}
 
 	return hr;
@@ -107,5 +115,5 @@ void ShaderCreate(const TCHAR* name)
 {
 	ShaderLoad(name);
 
-	CreateDynamicConstantBuffer(g_pDevice, sizeof(ConstBuffer), &g_pCB);	
+	CreateDynamicConstantBuffer(g_pDevice.Get(), sizeof(ConstBuffer), &g_pCB);
 }
