@@ -4,9 +4,9 @@ class Effect
 public:
 	struct BaseConstBuffer
 	{
-		XMFLOAT4X4 mView;
-		XMFLOAT4X4 mProj;
-		XMFLOAT4X4 mVP;
+		XMFLOAT4X4 mView	= XMFLOAT4X4{};
+		XMFLOAT4X4 mProj	= XMFLOAT4X4{};
+		XMFLOAT4X4 mVP		= XMFLOAT4X4{};
 		//XMFLOAT4X4 mWVP;		추후에 추가. 버텍스가 많아지면
 
 	};
@@ -25,7 +25,7 @@ protected:
 	ComPtr<ID3DBlob>			m_pVSCode;		//정점 쉐이더 바이너리 코드
 	ComPtr<ID3D11Buffer>		m_pCB;
 
-	BaseConstBuffer m_BCBuffer;
+	BaseConstBuffer m_BCBuffer{};
 
 	//리소스 관련 데이터
 	ComPtr<ID3D11ShaderResourceView>	m_pTextureRV;
@@ -35,15 +35,18 @@ protected:
 
 	bool m_bIsDirty;
 protected:
-	int	Load(TCHAR* filename);			//이펙트 구성 함수들
+	int	Load(const TCHAR* filename);			//이펙트 구성 함수들
 
 	//이펙트/셰이더 컴파일.
-	HRESULT Compile(WCHAR* FileName, char* EntryPoint, char* ShaderModel, ID3DBlob** ppCode);
+	HRESULT Compile(const TCHAR* FileName, const char* EntryPoint, const char* ShaderModel, ID3DBlob** ppCode);
 
-	//상수 버퍼 운용 메소드.
+	//상수 버퍼 운용 메소드
+	// 운용 방식이 쉐이더, 모델의 상수 버퍼를 나눠 운용하기에 임시로 동적 상수 버퍼는 제외
+	//정적 상수 버퍼 생성 / 정적 버퍼는 한프레임에 한번 업데이트 하면 되는 상수 버퍼
 	HRESULT CreateConstBuffer(UINT size, ID3D11Buffer** ppCB);
-	HRESULT CreateDynaConstBuffer(UINT size, LPVOID pData, ID3D11Buffer** ppCB);
-	HRESULT UpdateDynaConstBuffer(ID3D11DeviceContext* pDXDC, ID3D11Resource* pBuff, LPVOID pData, UINT size);
+	//동적 상수 버퍼 생성 / 동적 버퍼는 한프레임에 여러번 업데이트 하는 상수 버퍼(Draw 마다)
+	//HRESULT CreateDynaConstBuffer(UINT size, LPVOID pData, ID3D11Buffer** ppCB);
+	//HRESULT UpdateDynaConstBuffer(ID3D11DeviceContext* pDXDC, ID3D11Resource* pBuff, LPVOID pData, UINT size);
 
 public:
 	explicit Effect();
@@ -71,4 +74,4 @@ public:
 	BaseConstBuffer* GetCBuffer() { return &m_BCBuffer; }
 };
 
-int EffectCreate(ID3D11Device* pDev, TCHAR* filename, std::shared_ptr<Effect>& outEffect);
+int EffectCreate(ID3D11Device* pDev, const TCHAR* filename, std::shared_ptr<Effect>& outEffect);

@@ -9,6 +9,7 @@
 #include <tchar.h>
 #include <wrl/client.h>
 #include <memory>
+//#include "DXMath.h"
 #include "DirectXMath.h"
 
 using Microsoft::WRL::ComPtr;

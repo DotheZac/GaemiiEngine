@@ -150,9 +150,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DX11.h" />
+    <ClInclude Include="DXMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11.cpp" />
+    <ClCompile Include="DXMath.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

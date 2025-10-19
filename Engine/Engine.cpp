@@ -1,5 +1,6 @@
 ﻿#include "DX11.h"
 #include "Shader.h"
+#include "Effect.h"
 #include "Engine.h"
 
 struct VERTEX
@@ -17,7 +18,7 @@ XMFLOAT3 g_vPos(0, 0, 5);		//위치 : "월드 공간"
 XMFLOAT3 g_vRot(0, 0, 0);		//회전 
 XMFLOAT3 g_vScale(1, 1, 1);		//스케일 
 
-
+std::shared_ptr<Effect> g_pFx;
 
 
 int ObjLoad();
@@ -29,6 +30,7 @@ void CameraUpdate(float dTime);
 
 void Init()
 {
+	EffectCreate(g_pDevice.Get(), L"../fx/Demo.fx", g_pFx);
 	ObjLoad();
 	RasterStateCreate();
 }
@@ -102,6 +104,8 @@ void ShaderUpdate(float dTime)
 {
 	//g_pDXDC->VSSetShader(g_pVS, nullptr, 0);
 	//g_pDXDC->PSSetShader(g_pPS, nullptr, 0);
+
+	g_pFx->Apply();
 }
 
 void CameraUpdate(float dTime)
