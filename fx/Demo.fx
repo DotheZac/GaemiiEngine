@@ -13,11 +13,15 @@
 
 
 // 상수 버퍼
-cbuffer ConstBuffer //: register(b0)
+cbuffer BaseConstBuffer : register(b0)
 {
-    matrix mTM;         //월드 변환 행렬.
     matrix mView;       //뷰 변환 행렬. 
     matrix mProj;       //투영 변환 행렬. 
+};
+
+cbuffer ConstBuffer : register(b1)
+{
+    matrix mTM; //월드 변환 행렬. 
 };
 
  
@@ -42,7 +46,7 @@ VSOutput VS_Main(
 				)
 {
 	//정점 정리
-    //pos.w = 1;
+    pos.w = 1;
 
 	//월드 변환.(World Transform) 
     pos = mul(pos, mTM);        //pos = pos * mTM

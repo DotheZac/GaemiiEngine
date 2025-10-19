@@ -1,11 +1,11 @@
 ﻿#include <iostream>
 #include "DX11.h"
 
-ComPtr<ID3D11Device>        g_pDevice;
-ComPtr<ID3D11DeviceContext> g_pDXDC;
-ComPtr<IDXGISwapChain>      g_pSwapChain; 
-ComPtr<ID3D11RenderTargetView> g_pRTView; 
-ComPtr<ID3D11Texture2D> g_pDS;
+ComPtr<ID3D11Device>            g_pDevice;
+ComPtr<ID3D11DeviceContext>     g_pDXDC;
+ComPtr<IDXGISwapChain>          g_pSwapChain; 
+ComPtr<ID3D11RenderTargetView>  g_pRTView; 
+ComPtr<ID3D11Texture2D>         g_pDS;
 
 
 DXGI_ADAPTER_DESC1 g_Adc;

@@ -52,12 +52,15 @@ public:
 	explicit Effect();
 	virtual ~Effect();
 
-	virtual int Create(ID3D11Device* pDev, TCHAR* filename);
-	virtual int Create(ID3D11Device* pDev, TCHAR* shaderfilename, TCHAR* resourceFileName);
+	virtual int Create(ID3D11Device* pDev, const TCHAR* filename);
+	virtual int Create(ID3D11Device* pDev, const TCHAR* shaderfilename, const TCHAR* resourceFileName);
 	virtual int Update(float dTime = 0);
 	virtual int Apply(float dTime = 0);
 	virtual void Release();
 
+	ID3DBlob* GetVSCode() { return m_pVSCode.Get(); }
+	ID3D11VertexShader* GetVS() { return m_pVS.Get(); }
+	ID3D11PixelShader* GetPS() { return m_pPS.Get(); }
 
 
 	virtual int UpdateCB();

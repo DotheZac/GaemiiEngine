@@ -55,7 +55,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
     if (!DXSetup(g_hWnd))
         return 0;
 
-    ShaderCreate(L"../fx/Demo.fx");
+    //ShaderCreate(L"../fx/Demo.fx");
 
     Init();
     

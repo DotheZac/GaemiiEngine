@@ -6,8 +6,6 @@ void ShaderCreate(const TCHAR* name);
 struct ConstBuffer
 {
 	XMMATRIX mTM;		//"World" 변환 행렬 : DirectXMath, 16바이트 정렬 버전. 
-	XMMATRIX mView;		//"View"  변환 행렬  
-	XMMATRIX mProj;		//"Projection" 변환 행렬  	 
 };
 
 //셰이더 상수 버퍼.

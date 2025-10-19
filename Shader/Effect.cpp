@@ -18,7 +18,7 @@ Effect::~Effect()
 	Release();
 }
 
-int Effect::Create(ID3D11Device* pDev, TCHAR* filename)
+int Effect::Create(ID3D11Device* pDev, const TCHAR* filename)
 {
 	m_pDev = pDev;
 	m_pDev->GetImmediateContext(m_pDXDC.GetAddressOf());
@@ -35,7 +35,7 @@ int Effect::Create(ID3D11Device* pDev, TCHAR* filename)
 }
 
 //샘플할 이미지가 있을 경우
-int Effect::Create(ID3D11Device* pDev, TCHAR* shaderfilename, TCHAR* resourceFileName)
+int Effect::Create(ID3D11Device* pDev, const TCHAR* shaderfilename, const TCHAR* resourceFileName)
 {
 	return 0;
 }

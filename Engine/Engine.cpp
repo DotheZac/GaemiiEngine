@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "Effect.h"
 #include "Engine.h"
+#include <vector>
 
 struct VERTEX
 {
@@ -13,6 +14,7 @@ ID3D11InputLayout* g_pVBLayout = nullptr;
 ID3D11RasterizerState* g_RState = nullptr;
 
 ConstBuffer g_CBuffer;
+ConstBuffer g_GridCBuffer;
 
 XMFLOAT3 g_vPos(0, 0, 5);		//위치 : "월드 공간"
 XMFLOAT3 g_vRot(0, 0, 0);		//회전 
@@ -27,9 +29,20 @@ void ObjUpdate(float dTime);
 void ShaderUpdate(float dTime);
 void CameraUpdate(float dTime);
 
+//그리드
+const int GRID_SIZE = 10;
+std::vector<VERTEX> gridVerts;
+ID3D11Buffer* g_pGridVB = nullptr;
+void CreateGrid();
+void UpdateGrid();
+void DrawGrid();
 
 void Init()
 {
+	CreateGrid();
+
+	CreateDynamicConstantBuffer(g_pDevice.Get(), sizeof(ConstBuffer), &g_pCB);
+
 	EffectCreate(g_pDevice.Get(), L"../fx/Demo.fx", g_pFx);
 	ObjLoad();
 	RasterStateCreate();
@@ -66,6 +79,8 @@ float EngineUpdate()
 	ShaderUpdate(dTime);
 	CameraUpdate(dTime);
 	ObjUpdate(dTime);
+	g_pFx->Update();
+
 	return dTime;
 }
 
@@ -92,11 +107,8 @@ void ObjUpdate(float dTime)
 	XMFLOAT4X4 testf;
 	XMStoreFloat4x4(&testf, mTM);
 
-	XMFLOAT4X4 tt = testf;
-
 	g_CBuffer.mTM = mTM;
 
-	UpdateDynamicBuffer(g_pDXDC.Get(), g_pCB, &g_CBuffer, sizeof(ConstBuffer));
 
 }
 
@@ -106,16 +118,17 @@ void ShaderUpdate(float dTime)
 	//g_pDXDC->PSSetShader(g_pPS, nullptr, 0);
 
 	g_pFx->Apply();
+
 }
 
 void CameraUpdate(float dTime)
 {
 	XMFLOAT3 eyePos = XMFLOAT3(0.0f, 2.0f, -10.0f);
-	XMFLOAT3 lookAt = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	//XMFLOAT3 lookAt = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	XMFLOAT3 upDir = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
 	XMVECTOR eye = XMLoadFloat3(&eyePos);
-	XMVECTOR lookat = XMLoadFloat3(&lookAt);
+	XMVECTOR lookat = XMLoadFloat3(&g_vPos);
 	XMVECTOR up = XMLoadFloat3(&upDir);
 	XMMATRIX mView = XMMatrixLookAtLH(eye, lookat, up);
 
@@ -130,10 +143,50 @@ void CameraUpdate(float dTime)
 
 
 	//상수 버퍼에 행렬 설정.
-	g_CBuffer.mView = mView;
-	g_CBuffer.mProj = mProj;
+	g_pFx->SetView(mView);
+	g_pFx->SetProj(mProj);
 
 	UpdateDynamicBuffer(g_pDXDC.Get(), g_pCB, &g_CBuffer, sizeof(ConstBuffer));
+}
+
+void CreateGrid()
+{
+	for (int i = -GRID_SIZE; i <= GRID_SIZE; i++)
+	{
+		// Z축 방향 선
+		gridVerts.push_back({ (float)i, 0.0f, -GRID_SIZE });
+		gridVerts.push_back({ (float)i, 0.0f,  GRID_SIZE });
+
+		// X축 방향 선
+		gridVerts.push_back({ -GRID_SIZE, 0.0f, (float)i });
+		gridVerts.push_back({ GRID_SIZE, 0.0f, (float)i });
+	}
+
+	CreateVertexBuffer(g_pDevice.Get(),
+		gridVerts.data(),
+		sizeof(VERTEX) * gridVerts.size(),
+		sizeof(VERTEX),
+		&g_pGridVB);
+
+}
+
+void UpdateGrid()
+{
+	g_GridCBuffer.mTM = XMMatrixIdentity();
+
+	UpdateDynamicBuffer(g_pDXDC.Get(), g_pCB, &g_GridCBuffer, sizeof(ConstBuffer));
+}
+
+void DrawGrid()
+{
+	UINT stride = sizeof(VERTEX);
+	UINT offset = 0;
+	g_pDXDC->IASetVertexBuffers(0, 1, &g_pGridVB, &stride, &offset);
+	g_pDXDC->IASetInputLayout(g_pVBLayout); // 삼각형과 동일
+	g_pDXDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST); // 선 그리기
+
+	g_pFx->Apply(); // VS/PS 바인딩
+	g_pDXDC->Draw(gridVerts.size(), 0);
 }
 
 int ObjLoad()
@@ -148,6 +201,7 @@ int ObjLoad()
 
 	//정점 버퍼 생성
 	hr = CreateVertexBuffer(g_pDevice.Get(), verts, sizeof(verts), sizeof(VERTEX), &g_pVB);
+
 
 	if (FAILED(hr))
 	{
@@ -164,7 +218,8 @@ int ObjLoad()
 
 	// Inputlayout 객체 생성
 	ID3D11InputLayout* pLayout = nullptr;
-	hr = CreateInputLayout(g_pDevice.Get(), layout, ARRAYSIZE(layout), g_pVSCode, &g_pVBLayout);
+	//hr = CreateInputLayout(g_pDevice.Get(), layout, ARRAYSIZE(layout), g_pVSCode, &g_pVBLayout);
+	hr = CreateInputLayout(g_pDevice.Get(), layout, ARRAYSIZE(layout), g_pFx->GetVSCode(), &g_pVBLayout);
 
 	if (FAILED(hr)) 
 	{
@@ -178,9 +233,12 @@ int ObjLoad()
 
 void ObjDraw()
 {
+	UpdateDynamicBuffer(g_pDXDC.Get(), g_pCB, &g_CBuffer, sizeof(ConstBuffer));
+
 	UINT stride = sizeof(VERTEX);
 	UINT offset = 0;
 	g_pDXDC->IASetVertexBuffers(0, 1, &g_pVB, &stride, &offset);
+
 
 	//입력 레이아웃 설정.
 	g_pDXDC->IASetInputLayout(g_pVBLayout);
@@ -188,9 +246,10 @@ void ObjDraw()
 	//기하 위상구조 설정 
 	g_pDXDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	g_pDXDC->VSSetShader(g_pVS, nullptr, 0);
-	g_pDXDC->PSSetShader(g_pPS, nullptr, 0);
-	g_pDXDC->VSSetConstantBuffers(0, 1, &g_pCB);
+	//g_pDXDC->VSSetShader(g_pVS, nullptr, 0);
+	//g_pDXDC->PSSetShader(g_pPS, nullptr, 0);
+	g_pDXDC->VSSetConstantBuffers(1, 1, &g_pCB);
+
 
 
 	g_pDXDC->Draw(3, 0);
@@ -201,10 +260,11 @@ void Render()
 {
 
 	EngineUpdate();
-
+	UpdateGrid();
 	COLOR col(0, 0.125f, 0.3f, 1.0f);
 	ClearBackBuffer(D3D11_CLEAR_DEPTH, col);
 
+	DrawGrid();
 	ObjDraw();
 	Flip();
 }
