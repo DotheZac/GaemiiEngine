@@ -121,6 +121,35 @@ HRESULT Effect::Compile(const TCHAR* FileName, const char* EntryPoint, const cha
 	return hr;
 }
 
+int Effect::CreateLayout()
+{
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	UINT numElements = ARRAYSIZE(layout);
+
+	HRESULT hr = S_OK;
+	ID3D11InputLayout* pLayout = nullptr;
+	hr = g_pDevice->CreateInputLayout(layout,
+		numElements,
+		m_pVSCode->GetBufferPointer(),	
+		m_pVSCode->GetBufferSize(),		
+		&pLayout
+	);
+	if (FAILED(hr))
+	{
+		ERROR_MSG(hr);
+		return hr;
+	}
+
+
+	m_pLayout = pLayout;
+
+	return hr;
+}
+
 HRESULT Effect::CreateConstBuffer(UINT size, ID3D11Buffer** ppCB)
 {
 	HRESULT hr = S_OK;

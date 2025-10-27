@@ -1,4 +1,5 @@
 #pragma once
+#include "DX11.h"
 
 enum class DRAWTYPE
 {
@@ -31,7 +32,6 @@ protected:
 	UINT m_Offset;								//렌더링 시작 정점, 대부분 0
 	UINT m_VtxCnt;								//정점 개수, Draw할 때 쓰는거
 
-	ComPtr<ID3D11InputLayout> m_pLayout;		//정점 레이아웃
 
 public:
 	virtual int CreateVB(void* pBuff, UINT vtxCnt);
@@ -47,6 +47,10 @@ public:
 	virtual int Create(ID3D11Device* pDev, VOID* pBuff, UINT size);
 	virtual int Update(float dTime = 0);
 	virtual int Draw(float dTime = 0, DRAWTYPE drawType = DRAWTYPE::TRIANGLELIST);
+	virtual int Set(float dTime);
+
+protected:
+	int CreateVertexBuffer(VOID* pBuff, UINT size);
 };
 
-int  ModelCreate(ID3D11Device pDev, VOID* pBuff, UINT size, Model* ppModel);
+int  ModelCreate(ID3D11Device pDev, VOID* pBuff, UINT size, Model** ppModel);

@@ -32,6 +32,8 @@ protected:
 	const TCHAR*						m_pTexName;
 	ComPtr<ID3D11SamplerState>			m_pSampler;
 
+	ComPtr<ID3D11InputLayout> m_pLayout;		//정점 레이아웃
+
 
 	bool m_bIsDirty;
 protected:
@@ -39,7 +41,7 @@ protected:
 
 	//이펙트/셰이더 컴파일.
 	HRESULT Compile(const TCHAR* FileName, const char* EntryPoint, const char* ShaderModel, ID3DBlob** ppCode);
-
+	int CreateLayout();
 	//상수 버퍼 운용 메소드
 	// 운용 방식이 쉐이더, 모델의 상수 버퍼를 나눠 운용하기에 임시로 동적 상수 버퍼는 제외
 	//정적 상수 버퍼 생성 / 정적 버퍼는 한프레임에 한번 업데이트 하면 되는 상수 버퍼

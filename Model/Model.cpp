@@ -39,10 +39,82 @@ int Model::Update(float dTime)
 
 int Model::Draw(float dTime, DRAWTYPE drawType)
 {
+	Set(dTime);
+	m_pDXDC->Draw(m_VtxCnt, 0);
 	return 0;
 }
 
-int ModelCreate(ID3D11Device pDev, VOID* pBuff, UINT size, Model* ppModel)
+int Model::Set(float dTime)
 {
+	m_pDXDC->IASetVertexBuffers(0, 1, &m_pVB[0], &m_Stride, &m_Offset);
+	m_pDXDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //일단 하드코딩
 	return 0;
+}
+
+int Model::CreateVertexBuffer(VOID* pBuff, UINT size)
+{
+	ID3D11Buffer* pVB = nullptr;
+
+	HRESULT hr = S_OK;
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;		//버퍼 사용 방식
+	bd.ByteWidth = size;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;		//버텍스 버퍼 용도로 설정
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA rd;
+	ZeroMemory(&rd, sizeof(rd));
+	rd.pSysMem = pBuff;			//버퍼에 들어갈 데이터 설정
+
+	//버퍼 생성
+	hr = m_pDev->CreateBuffer(&bd, &rd, &pVB);
+	if (FAILED(hr))
+	{
+		ERROR_MSG(hr);
+		return hr;
+	}
+
+
+	//없으면 넣기
+	for (auto& vb : m_pVB)
+	{
+		if (vb == nullptr)
+		{
+			vb = pVB;
+			break;
+		}
+	}
+
+	m_buffSize = size;
+	m_Stride = sizeof(VTX);
+	m_Offset = 0;
+	m_VtxCnt = size / sizeof(VTX);
+
+
+
+	return S_OK;
+}
+
+int ModelCreate(ID3D11Device* pDev, VOID* pBuff, UINT size, Model** ppModel)
+{
+	int hr = S_OK;
+
+	//모델 객체 생성
+	Model* pModel = new Model;
+	if (pModel == nullptr)
+	{
+		//예외처리
+	}
+
+	//모델 정보 구성
+	hr = pModel->Create(pDev, pBuff, size);
+	if (FAILED(hr))
+	{
+		ERROR_MSG(hr);
+	}
+
+	*ppModel = pModel;
+
+	return hr;
 }
