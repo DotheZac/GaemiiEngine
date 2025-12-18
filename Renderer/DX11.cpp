@@ -160,7 +160,7 @@ void SystemUpdate(float dTime)
     //    g_pDXDC->OMSetDepthStencilState(g_DSState[DS_DEPTH_ON], 0);	//깊이 버퍼 동작 (기본값) 
     //else  g_pDXDC->OMSetDepthStencilState(g_DSState[DS_DEPTH_OFF], 0);	//깊이 버퍼 비활성화 : Z-Test Off + Z-Write Off.
 
-    g_pDXDC->OMSetDepthStencilState(g_DSState[static_cast<int>(DS::ON)].Get(), 0);
+    g_pDXDC->OMSetDepthStencilState(g_DSState[static_cast<int>(DS::OFF)].Get(), 0);
 
 }
 

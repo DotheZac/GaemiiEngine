@@ -4,6 +4,7 @@ class Effect
 public:
 	struct BaseConstBuffer
 	{
+		XMFLOAT4X4 mWorld	= XMFLOAT4X4{};
 		XMFLOAT4X4 mView	= XMFLOAT4X4{};
 		XMFLOAT4X4 mProj	= XMFLOAT4X4{};
 		XMFLOAT4X4 mVP		= XMFLOAT4X4{};
@@ -47,7 +48,7 @@ protected:
 	//정적 상수 버퍼 생성 / 정적 버퍼는 한프레임에 한번 업데이트 하면 되는 상수 버퍼
 	HRESULT CreateConstBuffer(UINT size, ID3D11Buffer** ppCB);
 	//동적 상수 버퍼 생성 / 동적 버퍼는 한프레임에 여러번 업데이트 하는 상수 버퍼(Draw 마다)
-	//HRESULT CreateDynaConstBuffer(UINT size, LPVOID pData, ID3D11Buffer** ppCB);
+	HRESULT CreateDynaConstBuffer(UINT size, LPVOID pData, ID3D11Buffer** ppCB);
 	//HRESULT UpdateDynaConstBuffer(ID3D11DeviceContext* pDXDC, ID3D11Resource* pBuff, LPVOID pData, UINT size);
 
 public:
@@ -73,6 +74,8 @@ public:
 	virtual int SetView(const XMFLOAT4X4& mTM);
 	virtual int SetProj(const XMMATRIX& mTM);
 	virtual int SetProj(const XMFLOAT4X4& mTM);
+
+	ComPtr<ID3D11InputLayout> GetInputLayout() { return m_pLayout; }
 
 	virtual void Info(int x, int y, COLOR col, float dTime = 0);
 

@@ -32,10 +32,10 @@ protected:
 	UINT m_Offset;								//렌더링 시작 정점, 대부분 0
 	UINT m_VtxCnt;								//정점 개수, Draw할 때 쓰는거
 
-
+	std::shared_ptr<Effect> m_pEffect;
 public:
-	virtual int CreateVB(void* pBuff, UINT vtxCnt);
-	virtual int CreateLayout();
+	//virtual int CreateVB(void* pBuff, UINT vtxCnt);
+	//virtual int CreateLayout();
 
 public:
 	Model();
@@ -49,8 +49,14 @@ public:
 	virtual int Draw(float dTime = 0, DRAWTYPE drawType = DRAWTYPE::TRIANGLELIST);
 	virtual int Set(float dTime);
 
+	virtual void SetShader(std::shared_ptr<Effect> effect);
 protected:
 	int CreateVertexBuffer(VOID* pBuff, UINT size);
 };
 
-int  ModelCreate(ID3D11Device pDev, VOID* pBuff, UINT size, Model** ppModel);
+int  ModelCreate(ID3D11Device* pDev, VOID* pBuff, UINT size, std::shared_ptr<Model>& outModel);
+
+
+//테스트용
+extern Model::VTX g_TestModel[];
+extern UINT g_TestModelSize;

@@ -8,7 +8,6 @@
 ID3D11VertexShader* g_pVS = nullptr;
 ID3D11PixelShader* g_pPS = nullptr;
 ID3DBlob* g_pVSCode = nullptr;
-ID3D11Buffer* g_pCB = nullptr;
 
 
 HRESULT ShaderLoad(const TCHAR* fxname, const char* entry, const char* sm, ID3D11VertexShader** ppVS, ID3DBlob** ppCode);
@@ -114,6 +113,4 @@ HRESULT ShaderCompile(const TCHAR* FileName, const char* EntryPoint, const char*
 void ShaderCreate(const TCHAR* name)
 {
 	ShaderLoad(name);
-
-	CreateDynamicConstantBuffer(g_pDevice.Get(), sizeof(ConstBuffer), &g_pCB);
 }

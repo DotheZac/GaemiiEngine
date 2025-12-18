@@ -1,6 +1,17 @@
 ﻿#include "DX11.h"
+#include "Effect.h"
 #include "Model.h"
 // TODO: 라이브러리 함수의 예제입니다.
+
+Model::VTX g_TestModel[] =
+{
+		{ -0.5f,  0.0f, 0.0f },
+		{  0.0f,  1.0f, 0.0f },
+		{  0.5f,  0.0f, 0.0f }
+
+};
+
+UINT g_TestModelSize = sizeof(g_TestModel);
 
 Model::Model()
 {
@@ -27,29 +38,43 @@ int Model::Create(ID3D11Device* pDev, VOID* pBuff, UINT size)
 	m_pDev = pDev;
 	m_pDev->GetImmediateContext(m_pDXDC.GetAddressOf());
 
-
+	CreateVertexBuffer(pBuff, size);
 
 	return 0;
 }
 
 int Model::Update(float dTime)
 {
+	m_pEffect->Update();
+
+
+	//돌리기
+	
+
+
 	return 0;
 }
 
 int Model::Draw(float dTime, DRAWTYPE drawType)
 {
 	Set(dTime);
+	m_pEffect->Apply();
 	m_pDXDC->Draw(m_VtxCnt, 0);
 	return 0;
 }
 
 int Model::Set(float dTime)
 {
-	m_pDXDC->IASetVertexBuffers(0, 1, &m_pVB[0], &m_Stride, &m_Offset);
+	m_pDXDC->IASetVertexBuffers(0, 1, m_pVB[0].GetAddressOf(), &m_Stride, &m_Offset);
 	m_pDXDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //일단 하드코딩
 	return 0;
 }
+
+void Model::SetShader(std::shared_ptr<Effect> effect)
+{
+	m_pEffect = effect;
+}
+
 
 int Model::CreateVertexBuffer(VOID* pBuff, UINT size)
 {
@@ -96,12 +121,12 @@ int Model::CreateVertexBuffer(VOID* pBuff, UINT size)
 	return S_OK;
 }
 
-int ModelCreate(ID3D11Device* pDev, VOID* pBuff, UINT size, Model** ppModel)
+int  ModelCreate(ID3D11Device* pDev, VOID* pBuff, UINT size, std::shared_ptr<Model>& outModel) 
 {
 	int hr = S_OK;
 
 	//모델 객체 생성
-	Model* pModel = new Model;
+	auto pModel = std::make_shared<Model>();
 	if (pModel == nullptr)
 	{
 		//예외처리
@@ -114,7 +139,7 @@ int ModelCreate(ID3D11Device* pDev, VOID* pBuff, UINT size, Model** ppModel)
 		ERROR_MSG(hr);
 	}
 
-	*ppModel = pModel;
+	outModel = pModel;
 
 	return hr;
 }

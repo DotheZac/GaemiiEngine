@@ -26,8 +26,7 @@ int Effect::Create(ID3D11Device* pDev, const TCHAR* filename)
 	Load(filename);
 
 	ZeroMemory(&m_BCBuffer, sizeof(BaseConstBuffer));
-	//CreateDynaConstBuffer(sizeof(BaseConstBuffer), &m_BCBuffer, m_pCB.GetAddressOf());
-	CreateConstBuffer(sizeof(BaseConstBuffer), m_pCB.GetAddressOf());
+	CreateDynaConstBuffer(sizeof(BaseConstBuffer), &m_BCBuffer ,m_pCB.GetAddressOf());
 
 	Update();
 
@@ -84,6 +83,8 @@ int Effect::Load(const TCHAR* filename)
 	m_pVSCode = pVSCode;
 	m_FileName = filename;
 	m_Profile = L"5.0";
+
+	CreateLayout();
 
 	return S_OK;
 }
@@ -150,6 +151,7 @@ int Effect::CreateLayout()
 	return hr;
 }
 
+//정적 상수버퍼 생성
 HRESULT Effect::CreateConstBuffer(UINT size, ID3D11Buffer** ppCB)
 {
 	HRESULT hr = S_OK;
@@ -173,11 +175,36 @@ HRESULT Effect::CreateConstBuffer(UINT size, ID3D11Buffer** ppCB)
 	return hr;
 }
 
-//HRESULT Effect::CreateDynaConstBuffer(UINT size, LPVOID pData, ID3D11Buffer** ppCB)
-//{
-//	return E_NOTIMPL;
-//}
-//
+HRESULT Effect::CreateDynaConstBuffer(UINT size, LPVOID pData, ID3D11Buffer** ppCB)
+{
+	HRESULT hr = S_OK;
+	UINT alignSize = AlignCBSize(size);					//16바이트 자동 정렬
+
+	D3D11_BUFFER_DESC bd = {};
+	bd.Usage = D3D11_USAGE_DYNAMIC;
+	bd.ByteWidth = alignSize;
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	D3D11_SUBRESOURCE_DATA sd = {};
+	sd.pSysMem = pData;
+	sd.SysMemPitch = 0;
+	sd.SysMemSlicePitch = 0;
+
+
+	ID3D11Buffer* pCB = nullptr;
+	hr = g_pDevice->CreateBuffer(&bd, &sd, &pCB);
+	if (FAILED(hr))
+	{
+		ERROR_MSG(hr);
+		return hr;
+	}
+
+	*ppCB = pCB;
+
+	return hr;
+}
+
 //HRESULT Effect::UpdateDynaConstBuffer(ID3D11DeviceContext* pDXDC, ID3D11Resource* pBuff, LPVOID pData, UINT size)
 //{
 //	return E_NOTIMPL;
@@ -193,8 +220,11 @@ int Effect::Update(float dTime)
 
 int Effect::Apply(float dTime)
 {
+	m_pDXDC->IASetInputLayout(m_pLayout.Get());
 	m_pDXDC->VSSetShader(m_pVS.Get(), nullptr, 0);
 	m_pDXDC->PSSetShader(m_pPS.Get(), nullptr, 0);
+
+	//m_pDXDC->VSSetConstantBuffers(1, 1, m_pCB.GetAddressOf());
 
 	return 0;
 }
@@ -231,6 +261,8 @@ int Effect::UpdateCB(const XMMATRIX& mTM)
 //미구현
 int Effect::UpdateCB(const XMFLOAT4X4& mTM)
 {
+	m_BCBuffer.mWorld = mTM;
+	UpdateDynamicBuffer(m_pDXDC.Get(), m_pCB.Get(), &m_BCBuffer, sizeof(BaseConstBuffer));
 	return 0;
 }
 
