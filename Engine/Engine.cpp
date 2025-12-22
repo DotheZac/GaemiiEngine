@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "Effect.h"
 #include "Model.h"
+#include "ITransformController.h"
 #include "Object.h"
 #include "Engine.h"
 #include <vector>
@@ -26,11 +27,12 @@ void CameraUpdate(float dTime);
 
 
 
-
+//세모
 std::shared_ptr<Model> g_pTestModel;
 std::shared_ptr<Object> g_pTestObject;
 
-
+//네모
+std::shared_ptr<Model> g_pTestModel2;
 std::shared_ptr<Object> g_pTestObject2;
 
 
@@ -45,11 +47,11 @@ void Init()
 	
 	ObjectCreate(g_pDevice.Get(), g_pTestModel, g_pObjFx, XMFLOAT3(0, 0, 0), g_pTestObject);
 
-	ObjectCreate(g_pDevice.Get(), g_pTestModel, g_pObjFx, XMFLOAT3(0, 0, 0), g_pTestObject2);
-	g_pTestObject2->SetUpdateFunc([](Object& o, float dt)
-		{
-			
-		});
+
+	ModelCreateIndex(g_pDevice.Get(), g_TestModelIndex, g_pFlatindices, g_pTestModel2);
+
+	ObjectCreate(g_pDevice.Get(), g_pTestModel2, g_pObjFx, XMFLOAT3(0, 0, 0), g_pTestObject2);
+	g_pTestObject2->SetBehavior(g_pTestObject2->YTurn(-1.f));
 
 
 	RasterStateCreate();
@@ -125,6 +127,7 @@ void Render()
 	float dTime = EngineUpdate();
 
 	g_pTestObject->Update(dTime);
+	g_pTestObject2->Update(dTime);
 
 
 	COLOR col(0, 0.125f, 0.3f, 1.0f);
@@ -133,6 +136,7 @@ void Render()
 
 
 	g_pTestObject->Draw();
+	g_pTestObject2->Draw();
 
 	//ObjDraw();
 	Flip();

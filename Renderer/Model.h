@@ -76,9 +76,11 @@ public:
 
 	virtual int Create(ID3D11Device* pDev, VOID* pBuff, UINT size);
 	virtual int Create(ID3D11Device* pDev, vector<vector<Model::VTX>>& vVTX, vector<vector<WORD>>& vIndex);
+	virtual int Create(ID3D11Device* pDev, vector<Model::VTX>& vVTX, vector<WORD>& vIndex);
 	virtual int Update(float dTime = 0);
 	virtual int Draw(float dTime = 0, DRAWTYPE drawType = DRAWTYPE::TRIANGLELIST);
 	virtual int Set(float dTime);
+	virtual int Set(int index, float dTime);
 
 	virtual void SetShader(std::shared_ptr<Effect> effect);
 protected:
@@ -88,10 +90,17 @@ protected:
 
 };
 
+//매개변수: 디바이스, 정점버퍼, 크기, 모델명
 int  ModelCreate(ID3D11Device* pDev, VOID* pBuff, UINT size, std::shared_ptr<Model>& outModel);
+//메쉬 여러개, 매개변수: 디바이스, 정점버퍼, 인덱스 버퍼, 모델명
 int  ModelCreateIndex(ID3D11Device* pDev, vector<vector<Model::VTX>>& vVTX, vector<vector<WORD>>& vIndex, std::shared_ptr<Model>& outModel);
+//메쉬 1개 매개변수: 디바이스, 정점버퍼, 인덱스 버퍼, 모델명
+int  ModelCreateIndex(ID3D11Device* pDev, vector<Model::VTX>& vVTX, vector<WORD>& vIndex, std::shared_ptr<Model>& outModel);
 
 
 //테스트용
 extern Model::VTX g_TestModel[];
+
+extern vector<Model::VTX> g_TestModelIndex;
+extern vector<WORD>	g_pFlatindices;
 extern UINT g_TestModelSize;

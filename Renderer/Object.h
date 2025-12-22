@@ -1,9 +1,11 @@
 #pragma once
 #include <functional>
-class Object
+#include "ITransformController.h"
+
+class Object : public ITransformController
 {
 public:
-	using UpdateFunc = std::function<void(Object&, float)>;
+	using Behavior = std::function<void(float)>;
 
 private:
 	//전체 유닛 객체 인스턴스 관리용 데이터
@@ -26,7 +28,8 @@ protected:
 	std::shared_ptr<Effect> m_pFx;
 
 	//업데이트 함수를 저장하는 변수
-	UpdateFunc m_UpdateFunc;
+	Behavior m_Behavior; 
+
 public:		//protected였는데 람다로 Update한다고 바꿈
 	virtual void UpdateTransform(const XMMATRIX& mScale, const XMMATRIX& mRot, const XMMATRIX& mTrans, const XMMATRIX& mTM);
 
@@ -38,14 +41,38 @@ public:
 	virtual int Create(ID3D11Device* pDev, std::shared_ptr<Model>& pModel, std::shared_ptr<Effect>& pFx, XMFLOAT3 pos = XMFLOAT3(0, 0, 0));
 	virtual int Update(float dTime = 0);
 	virtual int Draw(float dTime = 0);
-	virtual void SetUpdateFunc(UpdateFunc func)	{m_UpdateFunc = func;}
-
+	void SetBehavior(Behavior behavior) { m_Behavior = std::move(behavior); }
 
 	virtual void Reset();
 	virtual void Backup();
 
+//행동들
+public:
+	Behavior YTurn(float speed)
+	{
+		return [this, speed](float dTime)
+			{
+				AddRotationY(speed * dTime);
+			};
+	}
+
+
 private:
 	void GenerateID();
+
+//인터페이스 구현
+private:
+	void AddRotationY(float delta) override
+	{
+		m_vRot.y += delta;
+	}
+
+	void AddPosition(const XMFLOAT3& delta) override
+	{
+		m_vPos.x += delta.x;
+		m_vPos.y += delta.y;
+		m_vPos.z += delta.z;
+	}
 	
 };
 

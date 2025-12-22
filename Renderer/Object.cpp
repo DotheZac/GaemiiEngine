@@ -1,6 +1,7 @@
 #include "DX11.h"
 #include "Effect.h"
 #include "Model.h"
+
 #include "Object.h"
 
 UINT m_InstCnt = 0;
@@ -40,9 +41,9 @@ int Object::Create(ID3D11Device* pDev, std::shared_ptr<Model>& pModel, std::shar
 
 int Object::Update(float dTime)
 {
-	if (m_UpdateFunc)
+	if (m_Behavior)
 	{
-		m_UpdateFunc(*this, dTime);
+		m_Behavior(dTime);
 	}
 	else
 	{
@@ -50,21 +51,21 @@ int Object::Update(float dTime)
 		m_vRot.y += dTime;
 
 
-		XMMATRIX mScale = XMMatrixScaling(m_vScale.x, m_vScale.y, m_vScale.z);
-		XMMATRIX mRotX = XMMatrixRotationX(m_vRot.x); // 회전 넣기
-		XMMATRIX mRotY = XMMatrixRotationY(m_vRot.y); // 회전 넣기
-		XMMATRIX mRotZ = XMMatrixRotationZ(m_vRot.z); // 회전 넣기
-		XMMATRIX mRot = mRotX * mRotY * mRotZ;
-		XMMATRIX mTrans = XMMatrixTranslation(m_vPos.x, m_vPos.y, m_vPos.z);
-
-		XMMATRIX localTM = mScale * mRot * mTrans;
-
-		//XMMATRIX worldTM = localTM;
-		//if (m_pParent)
-		//	worldTM *= XMLoadFloat4x4(&m_pParent->m_mTM);
-		UpdateTransform(mScale, mRot, mTrans, localTM);
 	}
-	
+	XMMATRIX mScale = XMMatrixScaling(m_vScale.x, m_vScale.y, m_vScale.z);
+	XMMATRIX mRotX = XMMatrixRotationX(m_vRot.x); // 회전 넣기
+	XMMATRIX mRotY = XMMatrixRotationY(m_vRot.y); // 회전 넣기
+	XMMATRIX mRotZ = XMMatrixRotationZ(m_vRot.z); // 회전 넣기
+	XMMATRIX mRot = mRotX * mRotY * mRotZ;
+	XMMATRIX mTrans = XMMatrixTranslation(m_vPos.x, m_vPos.y, m_vPos.z);
+
+	XMMATRIX localTM = mScale * mRot * mTrans;
+
+	//XMMATRIX worldTM = localTM;
+	//if (m_pParent)
+	//	worldTM *= XMLoadFloat4x4(&m_pParent->m_mTM);
+	UpdateTransform(mScale, mRot, mTrans, localTM);
+
 
 	return S_OK;
 }

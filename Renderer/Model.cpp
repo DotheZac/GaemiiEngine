@@ -10,17 +10,20 @@ Model::VTX g_TestModel[] =
 
 };
 
-Model::VTX g_TestModelIndex[] =
+vector<Model::VTX> g_TestModelIndex =
 {
-		{ -0.5f,  0.0f,  0.5f },			//좌상단
-		{  0.5f,  0.0f,  0.5f },			//우상단
-		{ -0.5f,  0.0f, -0.5f },			//좌하단
-		{ 0.5f,  0.0f, -0.5f }				//우하단
+	
+	{ -0.5f,  0.0f,  0.5f },			//좌상단
+	{  0.5f,  0.0f,  0.5f },			//우상단
+	{ -0.5f,  0.0f, -0.5f },			//좌하단
+	{ 0.5f,  0.0f, -0.5f }				//우하단
+	
 };
 
-Model::INDEX	g_pFlatindices[] = {
-	{ 0, 1, 2 }, { 1, 2, 3 }
-
+vector<WORD> g_pFlatindices = 
+{
+	0, 1, 2,
+	1, 2, 3 
 };
 
 
@@ -59,6 +62,7 @@ int Model::Create(ID3D11Device* pDev, VOID* pBuff, UINT size)
 	return 0;
 }
 
+//테스트 필요
 int Model::Create(ID3D11Device* pDev, vector<vector<Model::VTX>>& vVTX, vector<vector<WORD>>& vIndex)
 {
 	m_vVTX = vVTX;
@@ -72,7 +76,6 @@ int Model::Create(ID3D11Device* pDev, vector<vector<Model::VTX>>& vVTX, vector<v
 	for (auto vtx : m_vVTX)
 	{
 		ComPtr<ID3D11Buffer> vb;
-		LPVOID pData = vtx.data();
 		UINT size = vtx.size() * sizeof(vtx[0]);
 		Model::CreateVertexBuffer(vtx.data(), size, vb);
 		m_vpVB.push_back(vb);
@@ -84,6 +87,36 @@ int Model::Create(ID3D11Device* pDev, vector<vector<Model::VTX>>& vVTX, vector<v
 		_CreateIB(index, mib);
 		m_vIB.push_back(mib);
 	}
+
+	return 0;
+}
+
+int Model::Create(ID3D11Device* pDev, vector<Model::VTX>& vVTX, vector<WORD>& vIndex)
+{
+	m_vVTX.push_back(vVTX);
+	m_vIndex.push_back(vIndex);
+
+	m_pDev = pDev;
+	m_pDev->GetImmediateContext(&m_pDXDC);
+
+	m_PartsNum = m_vVTX.size();
+
+	for (auto vtx : m_vVTX)
+	{
+		ComPtr<ID3D11Buffer> vb;
+		UINT size = vtx.size() * sizeof(vtx[0]);
+		Model::CreateVertexBuffer(vtx.data(), size, vb);
+		m_vpVB.push_back(vb);
+	}
+
+	for (auto index : m_vIndex)
+	{
+		MyIndexBuffer mib;
+		_CreateIB(index, mib);
+		m_vIB.push_back(mib);
+	}
+
+	m_IB = m_vIB[0];
 
 	return 0;
 }
@@ -106,7 +139,11 @@ int Model::Draw(float dTime, DRAWTYPE drawType)
 	m_pEffect->Apply();
 	if (m_IB.pIB != nullptr)
 	{
-		m_pDXDC->DrawIndexed(m_IB.IndexCnt, 0, 0);
+		for (int i = 0; i < m_PartsNum; i++)
+		{
+			Set(i, dTime);
+			m_pDXDC->DrawIndexed(m_IB.IndexCnt, 0, 0);
+		}
 	}
 	else
 	{
@@ -119,6 +156,14 @@ int Model::Draw(float dTime, DRAWTYPE drawType)
 int Model::Set(float dTime)
 {
 	m_pDXDC->IASetVertexBuffers(0, 1, m_pVB.GetAddressOf(), &m_Stride, &m_Offset);
+	m_pDXDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //일단 하드코딩
+	return 0;
+}
+
+int Model::Set(int index, float dTime)
+{
+	m_pDXDC->IASetVertexBuffers(0, 1, m_vpVB[index].GetAddressOf(), &m_Stride, &m_Offset);
+	m_pDXDC->IASetIndexBuffer(m_vIB[index].pIB.Get(), DXGI_FORMAT_R16_UINT, 0);
 	m_pDXDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //일단 하드코딩
 	return 0;
 }
@@ -191,6 +236,10 @@ int Model::CreateVertexBuffer(VOID* pBuff, UINT size, ComPtr<ID3D11Buffer>& outV
 
 	outVB = pVB;
 
+	m_buffSize = size;
+	m_Stride = sizeof(VTX);
+	m_Offset = 0;
+	m_VtxCnt = size / sizeof(VTX);
 
 	return hr;
 }
@@ -224,7 +273,7 @@ int Model::_CreateIB(std::vector<WORD>& ibdata, MyIndexBuffer& mib)
 
 
 
-	HRESULT hr = CreateIndexBuffer(m_pDev.Get(), ib, ibSize, &m_IB.pIB);
+	HRESULT hr = CreateIndexBuffer(m_pDev.Get(), ib, ibSize, &mib.pIB);
 	if (FAILED(hr))
 	{
 		ERROR_MSG(hr);
@@ -281,3 +330,25 @@ int ModelCreateIndex(ID3D11Device* pDev, std::vector<std::vector<Model::VTX>>& v
 	return hr;
 }
 
+int ModelCreateIndex(ID3D11Device* pDev, std::vector<Model::VTX>& vVTX, std::vector<WORD>& vIndex, std::shared_ptr<Model>& outModel)
+{
+	int hr = S_OK;
+
+	//모델 객체 생성
+	auto pModel = std::make_shared<Model>();
+	if (pModel == nullptr)
+	{
+		//예외처리
+	}
+
+	//모델 정보 구성
+	hr = pModel->Create(pDev, vVTX, vIndex);
+	if (FAILED(hr))
+	{
+		ERROR_MSG(hr);
+	}
+
+	outModel = pModel;
+
+	return hr;
+}
