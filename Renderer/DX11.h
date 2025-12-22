@@ -84,7 +84,7 @@ int 	CreateBuffer(ID3D11Device* pDev, UINT size, ID3D11Buffer** ppBuff);
 int 	UpdateBuffer(ID3D11Buffer* pBuff, LPVOID pData, UINT size);
 
 int		CreateVertexBuffer(ID3D11Device* pDev, LPVOID pData, UINT size, UINT stride, ID3D11Buffer** ppVB);
-int		CreateIndexBuffer();
+int		CreateIndexBuffer(ID3D11Device* pDev, LPVOID pData, UINT size, ID3D11Buffer** ppIB);
 int		CreateConstantBuffer(ID3D11Device* pDev, UINT size, ID3D11Buffer** ppCB);
 //ID3D11Buffer*	CreateConstantBuffer(UINT size);
 

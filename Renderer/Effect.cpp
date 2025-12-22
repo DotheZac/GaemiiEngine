@@ -255,6 +255,9 @@ int Effect::UpdateCB()
 //¹Ì±¸Çö
 int Effect::UpdateCB(const XMMATRIX& mTM)
 {
+	XMStoreFloat4x4(&m_BCBuffer.mWorld, mTM);
+	UpdateDynamicBuffer(m_pDXDC.Get(), m_pCB.Get(), &m_BCBuffer, sizeof(BaseConstBuffer));
+
 	return 0;
 }
 
@@ -263,6 +266,7 @@ int Effect::UpdateCB(const XMFLOAT4X4& mTM)
 {
 	m_BCBuffer.mWorld = mTM;
 	UpdateDynamicBuffer(m_pDXDC.Get(), m_pCB.Get(), &m_BCBuffer, sizeof(BaseConstBuffer));
+
 	return 0;
 }
 

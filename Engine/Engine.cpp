@@ -19,22 +19,11 @@ XMFLOAT3 g_vPos(0, 0, 5);		//위치 : "월드 공간"
 XMFLOAT3 g_vRot(0, 0, 0);		//회전 
 XMFLOAT3 g_vScale(1, 1, 1);		//스케일 
 
-//std::shared_ptr<Effect> g_pFx;
 std::shared_ptr<Effect> g_pObjFx;
 
-int ObjLoad();
 void RasterStateCreate();
-void ObjUpdate(float dTime);
-void ShaderUpdate(float dTime);
 void CameraUpdate(float dTime);
 
-//그리드
-const int GRID_SIZE = 10;
-std::vector<VERTEX> gridVerts;
-ID3D11Buffer* g_pGridVB = nullptr;
-void CreateGrid();
-void UpdateGrid();
-void DrawGrid();
 
 
 
@@ -42,22 +31,27 @@ std::shared_ptr<Model> g_pTestModel;
 std::shared_ptr<Object> g_pTestObject;
 
 
+std::shared_ptr<Object> g_pTestObject2;
+
 
 
 void Init()
 {
-	CreateGrid();
-
 
 	//EffectCreate(g_pDevice.Get(), L"../fx/Demo.fx", g_pFx);
 	EffectCreate(g_pDevice.Get(), L"../fx/Demo.fx", g_pObjFx);
 
 	ModelCreate(g_pDevice.Get(), g_TestModel, g_TestModelSize, g_pTestModel);
 	
-
 	ObjectCreate(g_pDevice.Get(), g_pTestModel, g_pObjFx, XMFLOAT3(0, 0, 0), g_pTestObject);
 
-	//ObjLoad();
+	ObjectCreate(g_pDevice.Get(), g_pTestModel, g_pObjFx, XMFLOAT3(0, 0, 0), g_pTestObject2);
+	g_pTestObject2->SetUpdateFunc([](Object& o, float dt)
+		{
+			
+		});
+
+
 	RasterStateCreate();
 }
 
@@ -89,26 +83,11 @@ float EngineUpdate()
 	SystemUpdate(dTime);
 	g_pDXDC->RSSetState(g_RState);
 
-	ShaderUpdate(dTime);
 	CameraUpdate(dTime);
-	ObjUpdate(dTime);
-	//g_pFx->Update();
 
 	return dTime;
 }
 
-void ObjUpdate(float dTime)
-{
-}
-
-void ShaderUpdate(float dTime)
-{
-	//g_pDXDC->VSSetShader(g_pVS, nullptr, 0);
-	//g_pDXDC->PSSetShader(g_pPS, nullptr, 0);
-
-	//g_pFx->Apply();
-
-}
 
 void CameraUpdate(float dTime)
 {
@@ -138,42 +117,12 @@ void CameraUpdate(float dTime)
 	g_pObjFx->SetProj(mProj);
 }
 
-void CreateGrid()
-{
-	for (int i = -GRID_SIZE; i <= GRID_SIZE; i++)
-	{
-		// Z축 방향 선
-		gridVerts.push_back({ (float)i, 0.0f, -GRID_SIZE });
-		gridVerts.push_back({ (float)i, 0.0f,  GRID_SIZE });
-
-		// X축 방향 선
-		gridVerts.push_back({ -GRID_SIZE, 0.0f, (float)i });
-		gridVerts.push_back({ GRID_SIZE, 0.0f, (float)i });
-	}
-
-	CreateVertexBuffer(g_pDevice.Get(),
-		gridVerts.data(),
-		sizeof(VERTEX) * gridVerts.size(),
-		sizeof(VERTEX),
-		&g_pGridVB);
-
-}
-
-void UpdateGrid()
-{
-
-}
-
-void DrawGrid()
-{
-}
 
 
 void Render()
 {
 
 	float dTime = EngineUpdate();
-	UpdateGrid();
 
 	g_pTestObject->Update(dTime);
 
@@ -184,7 +133,6 @@ void Render()
 
 
 	g_pTestObject->Draw();
-	DrawGrid();
 
 	//ObjDraw();
 	Flip();

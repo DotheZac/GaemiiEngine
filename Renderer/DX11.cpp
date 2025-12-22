@@ -201,8 +201,31 @@ int CreateVertexBuffer(ID3D11Device* pDev, LPVOID pData, UINT size, UINT stride,
     return S_OK;
 }
 
-int CreateIndexBuffer()
+int CreateIndexBuffer(ID3D11Device* pDev, LPVOID pData, UINT size, ID3D11Buffer** ppIB)
 {
+    HRESULT hr = S_OK;
+
+    D3D11_BUFFER_DESC bd = {};
+
+    bd.Usage = D3D11_USAGE_DEFAULT;			
+    bd.ByteWidth = size;					
+    bd.BindFlags = D3D11_BIND_INDEX_BUFFER;	
+    bd.CPUAccessFlags = 0;
+
+    D3D11_SUBRESOURCE_DATA rd;
+    ZeroMemory(&rd, sizeof(rd));
+    rd.pSysMem = pData;									
+
+    ID3D11Buffer* pIB = nullptr;
+    hr = g_pDevice->CreateBuffer(&bd, &rd, &pIB);
+    if (FAILED(hr))
+    {
+        ERROR_MSG(hr);
+        return hr;
+    }
+
+    *ppIB = pIB;
+
     return S_OK;
 }
 

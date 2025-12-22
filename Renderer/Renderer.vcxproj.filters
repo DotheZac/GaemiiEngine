@@ -16,6 +16,9 @@
     <Filter Include="소스 파일\fx">
       <UniqueIdentifier>{f118fee7-ca26-4e76-95ae-30005ce9e314}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{c5df1f0d-612b-4d03-9eff-a853ab7c9faf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DX11.cpp">
@@ -34,7 +37,13 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Object.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="ITransformController.cpp">
+      <Filter>Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +63,13 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Object.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ITransformController.h">
+      <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

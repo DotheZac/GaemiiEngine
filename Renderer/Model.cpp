@@ -1,7 +1,6 @@
 ﻿#include "DX11.h"
 #include "Effect.h"
 #include "Model.h"
-// TODO: 라이브러리 함수의 예제입니다.
 
 Model::VTX g_TestModel[] =
 {
@@ -10,6 +9,20 @@ Model::VTX g_TestModel[] =
 		{  0.5f,  0.0f, 0.0f }
 
 };
+
+Model::VTX g_TestModelIndex[] =
+{
+		{ -0.5f,  0.0f,  0.5f },			//좌상단
+		{  0.5f,  0.0f,  0.5f },			//우상단
+		{ -0.5f,  0.0f, -0.5f },			//좌하단
+		{ 0.5f,  0.0f, -0.5f }				//우하단
+};
+
+Model::INDEX	g_pFlatindices[] = {
+	{ 0, 1, 2 }, { 1, 2, 3 }
+
+};
+
 
 UINT g_TestModelSize = sizeof(g_TestModel);
 
@@ -20,6 +33,9 @@ Model::Model()
 	m_Stride = 0;
 	m_Offset = 0;
 	m_VtxCnt = 0;
+
+	m_IB.FaceCnt = 0;
+	m_IB.IndexCnt = 0;
 }
 
 Model::~Model()
@@ -43,6 +59,35 @@ int Model::Create(ID3D11Device* pDev, VOID* pBuff, UINT size)
 	return 0;
 }
 
+int Model::Create(ID3D11Device* pDev, vector<vector<Model::VTX>>& vVTX, vector<vector<WORD>>& vIndex)
+{
+	m_vVTX = vVTX;
+	m_vIndex = vIndex;
+
+	m_pDev = pDev;
+	m_pDev->GetImmediateContext(&m_pDXDC);
+
+	m_PartsNum = m_vVTX.size();
+
+	for (auto vtx : m_vVTX)
+	{
+		ComPtr<ID3D11Buffer> vb;
+		LPVOID pData = vtx.data();
+		UINT size = vtx.size() * sizeof(vtx[0]);
+		Model::CreateVertexBuffer(vtx.data(), size, vb);
+		m_vpVB.push_back(vb);
+	}
+
+	for (auto index : m_vIndex)
+	{
+		MyIndexBuffer mib;
+		_CreateIB(index, mib);
+		m_vIB.push_back(mib);
+	}
+
+	return 0;
+}
+
 int Model::Update(float dTime)
 {
 	m_pEffect->Update();
@@ -59,13 +104,21 @@ int Model::Draw(float dTime, DRAWTYPE drawType)
 {
 	Set(dTime);
 	m_pEffect->Apply();
-	m_pDXDC->Draw(m_VtxCnt, 0);
+	if (m_IB.pIB != nullptr)
+	{
+		m_pDXDC->DrawIndexed(m_IB.IndexCnt, 0, 0);
+	}
+	else
+	{
+		m_pDXDC->Draw(m_VtxCnt, 0);
+	}
+
 	return 0;
 }
 
 int Model::Set(float dTime)
 {
-	m_pDXDC->IASetVertexBuffers(0, 1, m_pVB[0].GetAddressOf(), &m_Stride, &m_Offset);
+	m_pDXDC->IASetVertexBuffers(0, 1, m_pVB.GetAddressOf(), &m_Stride, &m_Offset);
 	m_pDXDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //일단 하드코딩
 	return 0;
 }
@@ -100,16 +153,7 @@ int Model::CreateVertexBuffer(VOID* pBuff, UINT size)
 		return hr;
 	}
 
-
-	//없으면 넣기
-	for (auto& vb : m_pVB)
-	{
-		if (vb == nullptr)
-		{
-			vb = pVB;
-			break;
-		}
-	}
+	m_pVB = pVB;
 
 	m_buffSize = size;
 	m_Stride = sizeof(VTX);
@@ -120,6 +164,76 @@ int Model::CreateVertexBuffer(VOID* pBuff, UINT size)
 
 	return S_OK;
 }
+
+int Model::CreateVertexBuffer(VOID* pBuff, UINT size, ComPtr<ID3D11Buffer>& outVB)
+{
+	ID3D11Buffer* pVB = nullptr;
+
+	HRESULT hr = S_OK;
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;		//버퍼 사용 방식
+	bd.ByteWidth = size;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;		//버텍스 버퍼 용도로 설정
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA rd;
+	ZeroMemory(&rd, sizeof(rd));
+	rd.pSysMem = pBuff;			//버퍼에 들어갈 데이터 설정
+
+	//버퍼 생성
+	hr = m_pDev->CreateBuffer(&bd, &rd, &pVB);
+	if (FAILED(hr))
+	{
+		ERROR_MSG(hr);
+		return hr;
+	}
+
+	outVB = pVB;
+
+
+	return hr;
+}
+
+int Model::_CreateIB(std::vector<WORD>& ibdata, MyIndexBuffer& mib)
+{
+	if (ibdata.empty())
+	{
+		ERROR_MSG("인덱스 데이터 비어있음");
+		return S_FALSE;
+	}
+
+	WORD maxIndex = 0;
+	for (WORD idx : ibdata)
+		maxIndex = max(maxIndex, idx);
+
+	if (maxIndex >= 65536)
+	{
+		ERROR_MSG(L"인덱스 초과");
+		return S_FALSE;
+	}
+
+	UINT indexCount = (UINT)ibdata.size();
+
+	UINT ibSize = sizeof(WORD) * indexCount;
+
+	LPVOID ib = ibdata.data();
+
+	mib.IndexCnt = indexCount;
+	mib.FaceCnt = mib.IndexCnt / 3;
+
+
+
+	HRESULT hr = CreateIndexBuffer(m_pDev.Get(), ib, ibSize, &m_IB.pIB);
+	if (FAILED(hr))
+	{
+		ERROR_MSG(hr);
+		return hr;
+	}
+
+	return hr;
+}
+
 
 int  ModelCreate(ID3D11Device* pDev, VOID* pBuff, UINT size, std::shared_ptr<Model>& outModel) 
 {
@@ -143,3 +257,27 @@ int  ModelCreate(ID3D11Device* pDev, VOID* pBuff, UINT size, std::shared_ptr<Mod
 
 	return hr;
 }
+
+int ModelCreateIndex(ID3D11Device* pDev, std::vector<std::vector<Model::VTX>>& vVTX, std::vector<std::vector<WORD>>& vIndex, std::shared_ptr<Model>& outModel)
+{
+	int hr = S_OK;
+
+	//모델 객체 생성
+	auto pModel = std::make_shared<Model>();
+	if (pModel == nullptr)
+	{
+		//예외처리
+	}
+
+	//모델 정보 구성
+	hr = pModel->Create(pDev, vVTX, vIndex);
+	if (FAILED(hr))
+	{
+		ERROR_MSG(hr);
+	}
+
+	outModel = pModel;
+
+	return hr;
+}
+
