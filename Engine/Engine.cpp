@@ -46,12 +46,13 @@ void Init()
 	ModelCreate(g_pDevice.Get(), g_TestModel, g_TestModelSize, g_pTestModel);
 	
 	ObjectCreate(g_pDevice.Get(), g_pTestModel, g_pObjFx, XMFLOAT3(0, 0, 0), g_pTestObject);
-
+	g_pTestObject->AddPosition(XMFLOAT3(2, 0, 0));
 
 	ModelCreateIndex(g_pDevice.Get(), g_TestModelIndex, g_pFlatindices, g_pTestModel2);
 
 	ObjectCreate(g_pDevice.Get(), g_pTestModel2, g_pObjFx, XMFLOAT3(0, 0, 0), g_pTestObject2);
 	g_pTestObject2->SetBehavior(g_pTestObject2->YTurn(-1.f));
+	g_pTestObject2->AddPosition(XMFLOAT3(-2, 0, 0));
 
 
 	RasterStateCreate();

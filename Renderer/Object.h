@@ -56,6 +56,13 @@ public:
 			};
 	}
 
+	Behavior SetPos(const XMFLOAT3& pos)
+	{
+		return [this, pos](float dTime)
+			{
+				AddPosition(pos);
+			};
+	}
 
 private:
 	void GenerateID();
@@ -67,11 +74,12 @@ private:
 		m_vRot.y += delta;
 	}
 
-	void AddPosition(const XMFLOAT3& delta) override
+public:
+	void AddPosition(const XMFLOAT3& pos) override
 	{
-		m_vPos.x += delta.x;
-		m_vPos.y += delta.y;
-		m_vPos.z += delta.z;
+		m_vPos.x += pos.x;
+		m_vPos.y += pos.y;
+		m_vPos.z += pos.z;
 	}
 	
 };
